@@ -1,0 +1,58 @@
+
+name: Build daniru and Auto-merge to main
+
+on:
+  push:
+    branches: [ 'daniru' ]
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [ 'main' ]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-merge:
+    if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/daniru') || (github.event_name == 'pull_request' && github.head_ref == 'daniru') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Auto-merge `daniru` into `main` (on success)
+        if: success()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          if [ "${{ github.event_name }}" = "push" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
+            git fetch origin main
+            git checkout main
+            git pull origin main
+            git merge --no-ff origin/daniru -m "Auto-merge from daniru after successful build"
+            git push origin main
+          else
+            echo "Merging PR #${{ github.event.pull_request.number }}"
+            curl -s -X PUT \
+              -H "Authorization: token ${GITHUB_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/merge \
+              -d '{"commit_title":"Auto-merge from daniru after successful build","merge_method":"merge"}'
+          fi

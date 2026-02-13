@@ -1,9 +1,9 @@
 
-name: Build daniru and Auto-merge to main
+name: Build dev and Auto-merge to main
 
 on:
   push:
-    branches: [ 'daniru' ]
+    branches: [ 'dev' ]
   pull_request:
     types: [opened, synchronize, reopened]
     branches: [ 'main' ]
@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   build-and-merge:
-    if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/daniru') || (github.event_name == 'pull_request' && github.head_ref == 'daniru') }}
+    if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/dev') || (github.event_name == 'pull_request' && github.head_ref == 'dev') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -46,7 +46,7 @@ jobs:
             git fetch origin main
             git checkout main
             git pull origin main
-            git merge --no-ff origin/daniru -m "Auto-merge from daniru after successful build"
+            git merge --no-ff origin/dev -m "Auto-merge from dev after successful build"
             git push origin main
           else
             echo "Merging PR #${{ github.event.pull_request.number }}"
@@ -54,5 +54,5 @@ jobs:
               -H "Authorization: token ${GITHUB_TOKEN}" \
               -H "Accept: application/vnd.github+json" \
               https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/merge \
-              -d '{"commit_title":"Auto-merge from daniru after successful build","merge_method":"merge"}'
+              -d '{"commit_title":"Auto-merge from dev after successful build","merge_method":"merge"}'
           fi

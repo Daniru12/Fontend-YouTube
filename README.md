@@ -1,5 +1,24 @@
 # React + Vite
 
+## WhatsApp Message Demo (UltraMsg)
+
+1) Create a `.env` file (you can copy from `.env.example`):
+
+- `VITE_ULTRAMSG_INSTANCE_ID=...`
+- `VITE_ULTRAMSG_TOKEN=...`
+
+2) Install and run:
+
+- `npm install`
+- `npm run dev`
+
+3) Open the app and fill:
+
+- **To**: phone number (example: `94771234567`)
+- **Message**: your text
+
+Note: During `npm run dev`, the app uses a Vite proxy (`/ultramsg`) to reduce CORS issues.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:
